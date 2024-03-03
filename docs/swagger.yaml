@@ -1,0 +1,118 @@
+basePath: /api
+definitions:
+  Error-Response:
+    description: Response of API if error occurs
+    properties:
+      code:
+        description: Error code
+        type: string
+      extra:
+        additionalProperties: {}
+        description: Extra info about error
+        type: object
+      message:
+        description: Description error
+        type: string
+    type: object
+  internal_example_router.Example:
+    properties:
+      created_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      deleted_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        $ref: '#/definitions/timestamppb.Timestamp'
+    type: object
+  internal_example_router.ListExampleReq:
+    properties:
+      page:
+        description: default is 0
+        type: integer
+      page_size:
+        description: default is 100
+        type: integer
+      search:
+        type: string
+    required:
+    - search
+    type: object
+  internal_example_router.ListExampleResp:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/internal_example_router.Example'
+        type: array
+      next:
+        type: integer
+      page_size:
+        type: integer
+      previous:
+        type: integer
+    type: object
+  timestamppb.Timestamp:
+    properties:
+      nanos:
+        description: |-
+          Non-negative fractions of a second at nanosecond resolution. Negative
+          second values with fractions must still have non-negative nanos values
+          that count forward in time. Must be from 0 to 999,999,999
+          inclusive.
+        type: integer
+      seconds:
+        description: |-
+          Represents seconds of UTC time since Unix epoch
+          1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+          9999-12-31T23:59:59Z inclusive.
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Example API.
+  title: Example API
+  version: "1.0"
+paths:
+  /list:
+    post:
+      consumes:
+      - application/json
+      description: Get list
+      parameters:
+      - description: Request body
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/internal_example_router.ListExampleReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_example_router.ListExampleResp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error-Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error-Response'
+      summary: List
+      tags:
+      - list
+schemes:
+- http
+- https
+securityDefinitions:
+  AuthToken:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
