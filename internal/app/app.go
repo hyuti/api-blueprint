@@ -44,22 +44,22 @@ func Init() error {
 	}
 	app = new(App)
 	if err := WithCfg(); err != nil {
-		return fmt.Errorf("unable to init config: %w", err)
+		return err
 	}
 	if err := WithLogger(); err != nil {
-		return fmt.Errorf("unable to init logger: %w", err)
+		return err
 	}
 	if err := WithGinEngine(); err != nil {
-		return fmt.Errorf("unable to init gin: %w", err)
+		return err
 	}
 	if err := WithGRPCServer(); err != nil {
-		return fmt.Errorf("unable to init grpc: %w", err)
+		return err
 	}
 	if err := WithTele(); err != nil {
-		return fmt.Errorf("unable to init tele: %w", err)
+		return err
 	}
 	if err := WithEls(); err != nil {
-		return fmt.Errorf("unable to init els: %w", err)
+		return err
 	}
 	if _, err := pkgGprc.DefaultValidator(); err != nil {
 		return fmt.Errorf("unable to init validator: %w", err)
@@ -80,7 +80,7 @@ func WithTele() error {
 			FailSilently: app.cfg.Telegram.FailSilently,
 		})
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to init tele: %w", err)
 	}
 	return nil
 }
@@ -91,7 +91,7 @@ func WithGRPCServer() error {
 		},
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to init grpc: %w", err)
 	}
 	app.grpcSrv = grpcS
 	return nil
@@ -100,7 +100,7 @@ func WithGRPCServer() error {
 func WithCfg() error {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to init config: %w", err)
 	}
 	app.cfg = cfg
 	return nil
@@ -132,7 +132,7 @@ func WithGinEngine() error {
 		Name:   app.cfg.Name,
 	})
 	if err := http.DefaultTranslation(); err != nil {
-		return err
+		return fmt.Errorf("unable to init gin: %w", err)
 	}
 	return nil
 }
@@ -149,7 +149,7 @@ func WithEls() error {
 		Password:  app.cfg.Elastic.Password,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to init els: %w", err)
 	}
 	app.elk = es
 	return nil
