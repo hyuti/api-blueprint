@@ -1,0 +1,13 @@
+tmp/
+venv/
+log/
+logs/
+.idea/
+.vscode/
+
+*.log
+.dockerignore
+.gitignore
+.pre-commit-config.yaml
+Makefile
+*.md
