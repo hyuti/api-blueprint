@@ -2,7 +2,7 @@ package logger
 
 import (
 	"context"
-	ctx2 "github.com/hyuti/API-Golang-Template/pkg/ctx"
+	ctx2 "github.com/hyuti/api-blueprint/pkg/ctx"
 	"golang.org/x/exp/slog"
 	"io"
 	"os"

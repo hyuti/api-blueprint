@@ -11,6 +11,14 @@ type Config struct {
 	Telegram `yaml:"TELEGRAM"`
 	Elastic  `yaml:"ELASTIC"`
 	Gin      `yaml:"GIN"`
+	Postgres `yaml:"POSTGRES"`
+}
+type Postgres struct {
+	Host         string `yaml:"HOST"`
+	Port         string `yaml:"PORT"`
+	User         string `yaml:"USER"`
+	Password     string `yaml:"PASSWORD"`
+	DatabaseName string `yaml:"DATABASE_NAME"`
 }
 
 type App struct {

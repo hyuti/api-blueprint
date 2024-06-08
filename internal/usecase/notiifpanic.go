@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	pkgCtx "github.com/hyuti/API-Golang-Template/pkg/ctx"
-	"github.com/hyuti/API-Golang-Template/pkg/telegram"
-	"github.com/hyuti/API-Golang-Template/pkg/tool"
+	pkgCtx "github.com/hyuti/api-blueprint/pkg/ctx"
+	"github.com/hyuti/api-blueprint/pkg/telegram"
+	"github.com/hyuti/api-blueprint/pkg/tool"
 )
 
 const (

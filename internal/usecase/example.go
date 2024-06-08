@@ -3,10 +3,9 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/hyuti/API-Golang-Template/internal/example/proto"
+	"github.com/hyuti/api-blueprint/internal/proto"
 
-	"github.com/hyuti/API-Golang-Template/internal/example/entity"
-	"github.com/hyuti/API-Golang-Template/internal/example/repo"
+	"github.com/hyuti/api-blueprint/internal/repo"
 )
 
 type ExampleUseCase interface {
@@ -18,13 +17,14 @@ func NewExampleUseCase(r repo.ExampleRepo) ExampleUseCase {
 }
 
 type (
+	Example struct {
+		*proto.Example
+	}
 	ExampleReq struct {
-		PageSize *int32
-		Page     *int32
-		Search   *string
+		PaginatedRequest
 	}
 	ExampleResp struct {
-		*entity.PaginatedResponse[*proto.Example]
+		PaginatedResponse[Example]
 	}
 )
 

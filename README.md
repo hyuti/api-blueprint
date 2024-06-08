@@ -1,1 +1,1 @@
-# API-Golang-Template
+# api-blueprint

@@ -11,7 +11,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	vitranslations "github.com/go-playground/validator/v10/translations/vi"
-	"github.com/hyuti/API-Golang-Template/pkg/collection"
+	"github.com/hyuti/api-blueprint/pkg/collection"
 	"reflect"
 	"strings"
 	"sync"

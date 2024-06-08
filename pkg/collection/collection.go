@@ -1,7 +1,7 @@
 package collection
 
 // Map manipulates a slice and transforms it to a slice of another type.
-func Map[T any, R any](collection []T, callback func(item T, index int) R) []R {
+func Map[T, R any](collection []T, callback func(item T, index int) R) []R {
 	result := make([]R, len(collection))
 
 	for i, item := range collection {

@@ -1,5 +1,5 @@
 APP:
-  NAME: github.com/hyuti/API-Golang-Template
+  NAME: github.com/hyuti/api-blueprint
   DEBUG: true
   PATH_LOGGER: ./log/services.log
 

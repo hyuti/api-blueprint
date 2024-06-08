@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"github.com/hyuti/API-Golang-Template/internal/example/usecase"
-	"github.com/hyuti/API-Golang-Template/pkg/tool"
+	"github.com/hyuti/api-blueprint/internal/usecase"
+	"github.com/hyuti/api-blueprint/pkg/tool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

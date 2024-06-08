@@ -3,11 +3,11 @@ package router
 import (
 	"errors"
 	"github.com/go-playground/validator/v10"
-	pkgHttp "github.com/hyuti/API-Golang-Template/pkg/http"
+	pkgHttp "github.com/hyuti/api-blueprint/pkg/http"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyuti/API-Golang-Template/internal/example/usecase"
+	"github.com/hyuti/api-blueprint/internal/usecase"
 )
 
 const (

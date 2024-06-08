@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	ctx2 "github.com/hyuti/API-Golang-Template/pkg/ctx"
+	ctx2 "github.com/hyuti/api-blueprint/pkg/ctx"
 	"golang.org/x/exp/slog"
 	"net/http"
 	"time"

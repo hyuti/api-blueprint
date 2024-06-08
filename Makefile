@@ -9,6 +9,6 @@ run:
 
 grpcgen:
 	 protoc \
- 	--proto_path=./proto/api-golang-template/;./proto/include \
+ 	--proto_path=./proto/api-blueprint/;./proto/include \
  	--go_out=internal/example --go-grpc_out=internal/example \
- 	./proto/api-golang-template/example.proto
+ 	./proto/api-blueprint/example.proto
