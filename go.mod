@@ -12,6 +12,7 @@ require (
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.6.0
+	github.com/google/wire v0.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.1
 	github.com/hyuti/minion v0.0.1-beta
 	github.com/ilyakaznacheev/cleanenv v1.5.0

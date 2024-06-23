@@ -6,22 +6,22 @@ import (
 	"github.com/hyuti/api-blueprint/pkg/http"
 )
 
-func WithGinEngine() error {
+func WithGinEngine() (*gin.Engine, error) {
 	if app.cfg == nil {
-		return ErrCfgEmpty
+		return nil, ErrCfgEmpty
 	}
 	if app.logger == nil {
-		return ErrLoggerEmpty
+		return nil, ErrLoggerEmpty
 	}
-	app.ginEngine = http.New(&http.Cfg{
+	restful := http.New(&http.Cfg{
 		Debug:  app.cfg.Debug,
 		Logger: app.logger,
 		Name:   app.cfg.Name,
 	})
 	if err := http.DefaultTranslation(); err != nil {
-		return fmt.Errorf("cannot init gin: %w", err)
+		return nil, fmt.Errorf("cannot init gin: %w", err)
 	}
-	return nil
+	return restful, nil
 }
 func Gin() *gin.Engine {
 	mutex.Lock()

@@ -1,22 +1,28 @@
 package app
 
 import (
+	"errors"
 	"github.com/hyuti/api-blueprint/pkg/logger"
 	"golang.org/x/exp/slog"
 )
 
-func WithLogger() error {
+// TODO: serviceKey should be adjusted to be relevant to the project
+const serviceKey = "service-name"
+
+var ErrLoggerEmpty = errors.New("logger must not be empty")
+
+func WithLogger() (*slog.Logger, error) {
 	if app.cfg == nil {
-		return ErrCfgEmpty
+		return nil, ErrCfgEmpty
 	}
-	app.logger = logger.FileAndStdLogger(
+	l := logger.FileAndStdLogger(
 		app.cfg.PathLogger,
 		// TODO: log level should be adjusted in Production deployment
 		logger.WithLevelOpt(slog.LevelDebug),
 	)
-	app.logger = logger.WithServiceName(app.logger, serviceKey, app.cfg.Name)
-	app.logger = logger.WithCtxID(app.logger)
-	return nil
+	l = logger.WithServiceName(l, serviceKey, app.cfg.Name)
+	l = logger.WithCtxID(l)
+	return l, nil
 }
 func Logger() *slog.Logger {
 	mutex.Lock()

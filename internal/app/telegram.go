@@ -5,12 +5,11 @@ import (
 	"github.com/hyuti/api-blueprint/pkg/telegram"
 )
 
-func WithTele() error {
+func WithTele() (*telegram.Tele, error) {
 	if app.cfg == nil {
-		return ErrCfgEmpty
+		return nil, ErrCfgEmpty
 	}
-	var err error
-	app.tele, err = telegram.New(
+	t, err := telegram.New(
 		&telegram.TeleCfg{
 			Token:        app.cfg.Telegram.Token,
 			ChatID:       app.cfg.Telegram.ChatID,
@@ -18,9 +17,9 @@ func WithTele() error {
 			FailSilently: app.cfg.Telegram.FailSilently,
 		})
 	if err != nil {
-		return fmt.Errorf("cannot to init telegram: %w", err)
+		return nil, fmt.Errorf("cannot to init telegram: %w", err)
 	}
-	return nil
+	return t, nil
 }
 func Tele() *telegram.Tele {
 	mutex.Lock()

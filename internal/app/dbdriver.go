@@ -12,9 +12,9 @@ func dsnBuilder(host, port, user, pwd, dbName string) string {
 	return fmt.Sprintf(dsnTemplate, host, port, user, pwd, dbName)
 }
 
-func WithDBDriver() error {
+func WithDBDriver() (*gorm.DB, error) {
 	if app.cfg == nil {
-		return ErrCfgEmpty
+		return nil, ErrCfgEmpty
 	}
 	db, err := gorm.Open(postgres.Open(dsnBuilder(
 		app.cfg.Postgres.Host,
@@ -23,10 +23,9 @@ func WithDBDriver() error {
 		app.cfg.Postgres.Password,
 		app.cfg.Postgres.DatabaseName)))
 	if err != nil {
-		return fmt.Errorf("cannot to init db driver: %w", err)
+		return nil, fmt.Errorf("cannot to init db driver: %w", err)
 	}
-	app.dbDriver = db
-	return nil
+	return db, nil
 }
 
 func DBDriver() *gorm.DB {

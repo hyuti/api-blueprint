@@ -1,17 +1,19 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"github.com/hyuti/api-blueprint/config"
 )
 
-func WithCfg() error {
+var ErrCfgEmpty = errors.New("config must not be empty")
+
+func WithCfg() (*config.Config, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return fmt.Errorf("cannot init config: %w", err)
+		return nil, fmt.Errorf("cannot init config: %w", err)
 	}
-	app.cfg = cfg
-	return nil
+	return cfg, nil
 }
 func Cfg() *config.Config {
 	mutex.Lock()

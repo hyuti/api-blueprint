@@ -1,8 +1,6 @@
 package app
 
 import (
-	"errors"
-	"fmt"
 	els "github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 	"github.com/hyuti/api-blueprint/config"
@@ -13,19 +11,12 @@ import (
 	"sync"
 )
 
-// TODO: serviceKey should be adjusted to be relevant to the project
-const serviceKey = "service-name"
-
 var (
 	mutex sync.Mutex
 	app   *App
 )
 
-var (
-	ErrLoggerEmpty = errors.New("logger expected not to be empty")
-	ErrCfgEmpty    = errors.New("config expected not to be empty")
-)
-
+// TODO: add compiler checker if a specific attribute not initilized but listed, same as one as the stringer pkg did
 type App struct {
 	cfg       *config.Config
 	logger    *slog.Logger
@@ -42,16 +33,10 @@ func Init() error {
 	if app != nil {
 		return nil
 	}
-	app = new(App)
-	if err := WithCfg(); err != nil {
+	a, err := initializeApp()
+	if err != nil {
 		return err
 	}
-	if err := WithLogger(); err != nil {
-		return err
-	}
-	// TODO: add more apps here.
-	if _, err := pkgGprc.DefaultValidator(); err != nil {
-		return fmt.Errorf("cannot init validator: %w", err)
-	}
+	app = a
 	return nil
 }

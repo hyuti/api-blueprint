@@ -6,12 +6,12 @@ import (
 	"github.com/hyuti/api-blueprint/pkg/elasticsearch"
 )
 
-func WithEls() error {
+func WithEls() (*els.TypedClient, error) {
 	if app.logger == nil {
-		return ErrLoggerEmpty
+		return nil, ErrLoggerEmpty
 	}
 	if app.cfg == nil {
-		return ErrCfgEmpty
+		return nil, ErrCfgEmpty
 	}
 	es, err := elasticsearch.New(&elasticsearch.Cfg{
 		Addresses: []string{app.cfg.Elastic.URL},
@@ -19,10 +19,9 @@ func WithEls() error {
 		Password:  app.cfg.Elastic.Password,
 	})
 	if err != nil {
-		return fmt.Errorf("cannot init elasticsearch: %w", err)
+		return nil, fmt.Errorf("cannot init elasticsearch: %w", err)
 	}
-	app.elk = es
-	return nil
+	return es, nil
 }
 func Els() *els.TypedClient {
 	mutex.Lock()
