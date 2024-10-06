@@ -1,44 +1,76 @@
 package grpc
 
 import (
-	"github.com/hyuti/api-blueprint/internal/usecase"
-	"github.com/hyuti/api-blueprint/pkg/tool"
+	"context"
+	"errors"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
+	"golang.org/x/exp/slog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"runtime"
 )
 
-const (
-	ErrProcessingReq = "err_processing_request"
-	ErrValidateReq   = "err_validating_request"
-)
-
-func usecaseGrpcMapper(err error) error {
+func handleError(
+	ctx context.Context,
+	lgr *slog.Logger,
+	err error,
+) error {
 	code := codes.Internal
-	codeInternal := ErrProcessingReq
-	if e, ok := err.(usecase.Code); ok {
-		switch e.Code() {
-		case usecase.ErrValidateReq:
-			code = codes.InvalidArgument
-			codeInternal = ErrValidateReq
+
+	var myErr *pkgerr.Error
+	if !errors.As(err, &myErr) {
+		myErr = pkgerr.ErrInternalServer(err)
+	}
+	switch {
+	case errors.Is(myErr, pkgerr.LabelErrValidatingRequest):
+		code = codes.InvalidArgument
+	case errors.Is(myErr, pkgerr.LabelErrAuthenticateRequest):
+		code = codes.Unauthenticated
+	case errors.Is(myErr, pkgerr.LabelErrAuthorizeRequest):
+		code = codes.PermissionDenied
+	}
+	if code != codes.Internal {
+		return status.Error(code, myErr.Error())
+	}
+
+	// TODO: trigger github issue creation flow
+	lgr.ErrorContext(
+		ctx,
+		"error internal server",
+		"error", myErr.Error(),
+		"func", myErr.NameFunc(),
+		"payload", myErr.Payload(),
+		"chain", myErr.Chain(),
+		"path", "",
+		"controller", "",
+		"params", "",
+		"query", "",
+	)
+
+	return status.Error(code, "Something went wrong, please check server logs for detail")
+}
+
+func OnPanic(lgr *slog.Logger) recovery.RecoveryHandlerFuncContext {
+	return func(ctx context.Context, errObj any) error {
+		var chain []string
+		for i := 5; ; i++ {
+			pc, _, _, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
+			chain = append(chain, runtime.FuncForPC(pc).Name())
 		}
-	}
-	extra := make(map[string]any)
-	if e, ok := err.(usecase.Extra); ok {
-		extra = e.Extra()
-	}
-	return status.Error(code, ErrResponse{
-		Code:  codeInternal,
-		Msg:   err.Error(),
-		Extra: extra,
-	}.Error())
-}
+		err, ok := errObj.(error)
+		if !ok {
+			err = errors.New(chain[0])
+		}
 
-type ErrResponse struct {
-	Code  string         `json:"code"`    // Error code
-	Msg   string         `json:"message"` // Description error
-	Extra map[string]any `json:"extra"`   // Extra info about error
-}
-
-func (e ErrResponse) Error() string {
-	return tool.JSONStringify(&e)
+		myErr := pkgerr.ErrInternalServer(
+			err,
+			pkgerr.WithChainOpt(chain...),
+			pkgerr.WithNameFuncOpt(chain[len(chain)-1]),
+		)
+		return handleError(ctx, lgr, myErr)
+	}
 }

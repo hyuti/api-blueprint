@@ -17,14 +17,9 @@ func initializeApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	tele, err := WithTele()
-	if err != nil {
-		return nil, err
-	}
 	appApp := &App{
 		cfg:    config,
 		logger: logger,
-		tele:   tele,
 	}
 	return appApp, nil
 }

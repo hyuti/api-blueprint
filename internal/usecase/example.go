@@ -12,8 +12,8 @@ type ExampleUseCase interface {
 	List(ctx context.Context, req *ExampleReq) (*ExampleResp, error)
 }
 
-func NewExampleUseCase(r repo.ExampleRepo) ExampleUseCase {
-	return &exampleUC{repo: r}
+func NewExampleUseCase(r repo.ExampleRepo) *ExampleUseCaseImpl {
+	return &ExampleUseCaseImpl{repo: r}
 }
 
 type (
@@ -28,10 +28,12 @@ type (
 	}
 )
 
-func (e *exampleUC) List(ctx context.Context, req *ExampleReq) (*ExampleResp, error) {
+var _ ExampleUseCase = (*ExampleUseCaseImpl)(nil)
+
+func (e *ExampleUseCaseImpl) List(ctx context.Context, req *ExampleReq) (*ExampleResp, error) {
 	return nil, errors.New("not implemented")
 }
 
-type exampleUC struct {
+type ExampleUseCaseImpl struct {
 	repo repo.ExampleRepo
 }

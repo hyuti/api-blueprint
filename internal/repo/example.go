@@ -3,13 +3,12 @@ package repo
 import (
 	"context"
 	"errors"
-	els "github.com/elastic/go-elasticsearch/v8"
 	"time"
 )
 
 type (
 	ExampleRepo interface {
-		repo[*ExampleWhereReq, *Example]
+		Repo[*ExampleWhereReq, *Example]
 	}
 	ExampleWhereReq struct {
 		Search *string
@@ -24,21 +23,20 @@ type (
 	}
 )
 
-func NewExampleRepo(els *els.TypedClient) ExampleRepo {
-	r := &exampleRepo{
-		els: els,
-	}
-	r.repo = &Repo[*ExampleWhereReq, *Example]{
+func NewExampleRepo() *ExampleRepoImpl {
+	r := &ExampleRepoImpl{}
+	r.Repo = &RepoImpl[*ExampleWhereReq, *Example]{
 		lister: r,
 	}
 	return r
 }
 
-type exampleRepo struct {
-	repo[*ExampleWhereReq, *Example]
-	els *els.TypedClient
+type ExampleRepoImpl struct {
+	Repo[*ExampleWhereReq, *Example]
 }
 
-func (e *exampleRepo) List(ctx context.Context, w *Where[*ExampleWhereReq]) ([]*Example, error) {
+var _ ExampleRepo = (*ExampleRepoImpl)(nil)
+
+func (e *ExampleRepoImpl) List(ctx context.Context, w *Where[*ExampleWhereReq]) ([]*Example, error) {
 	return nil, errors.New("not implemented")
 }

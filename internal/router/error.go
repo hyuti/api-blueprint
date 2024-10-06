@@ -2,73 +2,72 @@ package router
 
 import (
 	"errors"
-	"github.com/go-playground/validator/v10"
-	pkgHttp "github.com/hyuti/api-blueprint/pkg/http"
+	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
+	"golang.org/x/exp/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyuti/api-blueprint/internal/usecase"
 )
-
-const (
-	ErrProcessingReq = "err_processing_request"
-	ErrValidateReq   = "err_validating_request"
-)
-
-var ErrInvalidData = errors.New("some data is invalid")
 
 // @Description Response of API if error occurs
 type ErrResponse struct {
-	Code  string         `json:"code"`    // Error code
+	Code  any            `json:"code"`    // Error code
 	Msg   string         `json:"message"` // Description error
 	Extra map[string]any `json:"extra"`   // Extra info about error
 } // @name Error-Response
 
-func ErrResp(err error, code string, extra ...func(e map[string]any)) ErrResponse {
-	e := ErrResponse{
-		Code:  code,
-		Msg:   err.Error(),
-		Extra: make(map[string]any),
-	}
-	for _, f := range extra {
-		f(e.Extra)
-	}
-	return e
+var _ error = (*ErrResponse)(nil)
+
+func (r *ErrResponse) Error() string {
+	return r.Msg
 }
-func ErrProcessing(ctx *gin.Context, err error, extra ...func(e map[string]any)) ErrResponse {
-	return ErrResp(err, ErrProcessingReq, extra...)
-}
-func ErrValidation(ctx *gin.Context, err error, extra ...func(e map[string]any)) ErrResponse {
-	if errs, ok := err.(validator.ValidationErrors); ok {
-		if trans, _err := pkgHttp.TranslatorCtx(ctx); _err == nil {
-			err = ErrInvalidData
-			for k, v := range errs.Translate(trans) {
-				extra = append(extra, func(e map[string]any) {
-					e[k] = v
-				})
-			}
-		}
+
+func handleError(
+	ctx *gin.Context,
+	lgr *slog.Logger,
+	err error,
+) {
+	code := http.StatusInternalServerError
+
+	var myErr *pkgerr.Error
+	if !errors.As(err, &myErr) {
+		myErr = pkgerr.ErrInternalServer(err)
+	}
+	switch {
+	case errors.Is(myErr, pkgerr.LabelErrValidatingRequest):
+		code = http.StatusBadRequest
+	case errors.Is(myErr, pkgerr.LabelErrAuthenticateRequest):
+		code = http.StatusForbidden
+	case errors.Is(myErr, pkgerr.LabelErrAuthorizeRequest):
+		code = http.StatusUnauthorized
 	}
 
-	return ErrResp(err, ErrValidateReq, extra...)
-}
-func usecaseRouterErrMapper(ctx *gin.Context, err error) {
-	stsCode := http.StatusInternalServerError
-	code := ErrProcessingReq
-	if e, ok := err.(usecase.Code); ok {
-		switch e.Code() {
-		case usecase.ErrValidateReq:
-			stsCode = http.StatusBadRequest
-			code = ErrValidateReq
-		}
+	if code != http.StatusInternalServerError {
+		ctx.AbortWithStatusJSON(code, &ErrResponse{
+			Code:  code,
+			Msg:   myErr.Error(),
+			Extra: myErr.Extra(),
+		})
+		return
 	}
-	extra := make(map[string]any)
-	if e, ok := err.(usecase.Extra); ok {
-		extra = e.Extra()
-	}
-	ctx.AbortWithStatusJSON(stsCode, ErrResp(err, code, func(e map[string]any) {
-		for k, v := range extra {
-			e[k] = v
-		}
-	}))
+
+	// TODO: trigger github issue creation flow
+	lgr.ErrorContext(
+		ctx.Request.Context(),
+		"error internal server",
+		"error", myErr.Error(),
+		"func", myErr.NameFunc(),
+		"payload", myErr.Payload(),
+		"chain", myErr.Chain(),
+		"path", ctx.FullPath(),
+		"controller", ctx.HandlerName(),
+		"params", ctx.Params,
+		"query", ctx.Request.URL.String(),
+	)
+
+	ctx.AbortWithStatusJSON(http.StatusInternalServerError, ErrResponse{
+		Code: http.StatusInternalServerError,
+		Msg:  "Something went wrong, please check server logs for detail",
+	})
+	return
 }

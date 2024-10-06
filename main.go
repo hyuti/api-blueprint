@@ -27,7 +27,6 @@ import (
 var (
 	mutex sync.Mutex
 	_uc   usecase.ExampleUseCase
-	_uc1  usecase.NotiIfPanicUseCase
 	_jobs []func() error
 )
 
@@ -37,9 +36,8 @@ func init() {
 	}
 	// TODO: add more usecases and repositories as well
 	// usecases and repos should be cross servers level because plenty of servers could depend on them
-	re := repo.NewExampleRepo(app.Els())
+	re := repo.NewExampleRepo()
 	_uc = usecase.NewExampleUseCase(re)
-	_uc1 = usecase.NewNotiIfPanicUseCase(app.Tele(), app.Cfg().Name)
 
 	// TODO: add more jobs here
 	initRestfulServer()
@@ -75,11 +73,10 @@ func sharedInit(initiator func(), job func() error) {
 }
 func initRestfulServer() {
 	sharedInit(func() {
-		app.Gin().Use(gin.CustomRecovery(router.OnPanic(_uc1)))
+		app.Gin().Use(gin.CustomRecovery(router.OnPanic(app.Logger())))
 		app.Gin().Use(middleware.LimiterMiddleware(pkgGprc.RateLimit().Limiter()))
-		basePath := app.Cfg().Gin.BasePath + "/api/v1"
-		docs.SwaggerInfo.BasePath = basePath
-		group := app.Gin().Group(basePath)
+		docs.SwaggerInfo.BasePath = app.Cfg().Gin.BasePath
+		group := app.Gin().Group(app.Cfg().Gin.BasePath)
 		{
 			group.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 			group.GET("/healthcheck", router.HeathCheck)
@@ -94,18 +91,19 @@ func initGrpcServer() {
 	sharedInit(func() {
 		grpcS.WithOpt(
 			grpc.ChainUnaryInterceptor(
-				recovery.UnaryServerInterceptor(recovery.WithRecoveryHandlerContext(_uc1.GrpcHandle)),
+				recovery.UnaryServerInterceptor(recovery.WithRecoveryHandlerContext(srvGrpc.OnPanic(app.Logger()))),
 				logging.UnaryServerInterceptor(pkgGprc.InterceptorLogger(app.Logger())),
 				protovalidatemiddleware.UnaryServerInterceptor(pkgGprc.Validator()),
 				ratelimit.UnaryServerInterceptor(pkgGprc.RateLimit()),
 			),
 			grpc.ChainStreamInterceptor(
-				recovery.StreamServerInterceptor(recovery.WithRecoveryHandlerContext(_uc1.GrpcHandle)),
+				recovery.StreamServerInterceptor(recovery.WithRecoveryHandlerContext(srvGrpc.OnPanic(app.Logger()))),
 				logging.StreamServerInterceptor(pkgGprc.InterceptorLogger(app.Logger())),
 			),
 		)
 		proto.RegisterApiGolangTemplateServer(grpcS.Server(), srvGrpc.New(
 			_uc,
+			app.Logger(),
 		))
 	}, func() error {
 		return grpcS.Run()

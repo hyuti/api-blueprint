@@ -48,7 +48,7 @@ type ListExampleResp struct {
 func (r *route) list(ctx *gin.Context) {
 	var req ListExampleReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, ErrValidation(ctx, err))
+		handleError(ctx, r.lgr, err)
 		return
 	}
 	ctx.Set(plKey, req)
@@ -59,7 +59,7 @@ func (r *route) list(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		usecaseRouterErrMapper(ctx, err)
+		handleError(ctx, r.lgr, err)
 		return
 	}
 

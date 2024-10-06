@@ -5,24 +5,31 @@ import (
 	"github.com/hyuti/api-blueprint/internal/proto"
 	"github.com/hyuti/api-blueprint/internal/usecase"
 	"github.com/hyuti/api-blueprint/pkg/collection"
+	"golang.org/x/exp/slog"
 )
 
-type apiGolangTemplateServiceServer struct {
+type ApiGolangTemplateServiceServer struct {
 	proto.UnimplementedApiGolangTemplateServer
 	uc1 usecase.ExampleUseCase
+	lgr *slog.Logger
 }
 
-var _ proto.ApiGolangTemplateServer = (*apiGolangTemplateServiceServer)(nil)
+var _ proto.ApiGolangTemplateServer = (*ApiGolangTemplateServiceServer)(nil)
 
 func New(
 	uc1 usecase.ExampleUseCase,
-) proto.ApiGolangTemplateServer {
-	return &apiGolangTemplateServiceServer{
+	lgr *slog.Logger,
+) *ApiGolangTemplateServiceServer {
+	return &ApiGolangTemplateServiceServer{
 		uc1: uc1,
+		lgr: lgr,
 	}
 }
 
-func (p *apiGolangTemplateServiceServer) ListExample(ctx context.Context, request *proto.ExampleListRequest) (*proto.ExampleListResponse, error) {
+func (p *ApiGolangTemplateServiceServer) ListExample(
+	ctx context.Context,
+	request *proto.ExampleListRequest,
+) (*proto.ExampleListResponse, error) {
 	resp, err := p.uc1.List(ctx, &usecase.ExampleReq{
 		PaginatedRequest: usecase.PaginatedRequest{
 			PageSize: request.PageSize,
@@ -30,7 +37,7 @@ func (p *apiGolangTemplateServiceServer) ListExample(ctx context.Context, reques
 		},
 	})
 	if err != nil {
-		return nil, usecaseGrpcMapper(err)
+		return nil, handleError(ctx, p.lgr, err)
 	}
 	paginatedResp := resp
 	return &proto.ExampleListResponse{
