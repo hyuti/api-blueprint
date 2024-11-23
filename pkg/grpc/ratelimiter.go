@@ -11,42 +11,44 @@ import (
 
 var ErrTooManyRequests = errors.New("number of permitted requests exceeded")
 
-var rateLimit *rateLimiter
+var rateLimit *RateLimiter
 
-func RateLimit() *rateLimiter {
+func RateLimit() *RateLimiter {
 	if rateLimit == nil {
 		OneThousandReqPS()
 	}
 	return rateLimit
 }
 
-type rateLimiter struct {
+type RateLimiter struct {
 	l *rate.Limiter
 }
 
-func (r *rateLimiter) Limiter() *rate.Limiter {
+var _ ratelimit.Limiter = (*RateLimiter)(nil)
+
+func (r *RateLimiter) Limiter() *rate.Limiter {
 	return r.l
 }
 
-func (r *rateLimiter) Limit(_ context.Context) error {
+func (r *RateLimiter) Limit(_ context.Context) error {
 	if r.l.Allow() {
 		return nil
 	}
 	return ErrTooManyRequests
 }
 
-func NReqPS(n int) ratelimit.Limiter {
+func NReqPS(n int) *RateLimiter {
 	return NewRateLimiter(time.Millisecond, n)
 }
-func OneThousandReqPS() ratelimit.Limiter {
+func OneThousandReqPS() *RateLimiter {
 	return NReqPS(1000)
 }
-func TwoThousandReqPS() ratelimit.Limiter {
+func TwoThousandReqPS() *RateLimiter {
 	return NReqPS(2000)
 }
 
-func NewRateLimiter(s time.Duration, t int) ratelimit.Limiter {
-	rateLimit = &rateLimiter{
+func NewRateLimiter(s time.Duration, t int) *RateLimiter {
+	rateLimit = &RateLimiter{
 		l: rate.NewLimiter(rate.Every(s), t),
 	}
 	return rateLimit

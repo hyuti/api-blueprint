@@ -41,7 +41,7 @@ func init() {
 
 	// TODO: add more jobs here
 	initRestfulServer()
-	// initGrpcServer()
+	initGrpcServer()
 }
 
 // @title Example API
@@ -93,11 +93,13 @@ func initGrpcServer() {
 			grpc.ChainUnaryInterceptor(
 				recovery.UnaryServerInterceptor(recovery.WithRecoveryHandlerContext(srvGrpc.OnPanic(app.Logger()))),
 				logging.UnaryServerInterceptor(pkgGprc.InterceptorLogger(app.Logger())),
+				pkgGprc.UnaryServerInterceptor(),
 				protovalidatemiddleware.UnaryServerInterceptor(pkgGprc.Validator()),
 				ratelimit.UnaryServerInterceptor(pkgGprc.RateLimit()),
 			),
 			grpc.ChainStreamInterceptor(
 				recovery.StreamServerInterceptor(recovery.WithRecoveryHandlerContext(srvGrpc.OnPanic(app.Logger()))),
+				pkgGprc.StreamServerInterceptor(),
 				logging.StreamServerInterceptor(pkgGprc.InterceptorLogger(app.Logger())),
 			),
 		)

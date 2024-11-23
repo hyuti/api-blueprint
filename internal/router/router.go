@@ -7,6 +7,7 @@ import (
 	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
 	"github.com/hyuti/api-blueprint/pkg/tool"
 	"golang.org/x/exp/slog"
+	"google.golang.org/protobuf/encoding/protojson"
 	"net/http"
 	"runtime"
 )
@@ -59,4 +60,10 @@ func OnPanic(lgr *slog.Logger) gin.RecoveryFunc {
 
 func HeathCheck(ctx *gin.Context) {
 	ctx.AbortWithStatus(http.StatusOK)
+}
+
+var marshaller protojson.MarshalOptions
+
+func init() {
+	marshaller = protojson.MarshalOptions{EmitUnpopulated: true}
 }

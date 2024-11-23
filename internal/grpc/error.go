@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
+	grpcware "github.com/hyuti/api-blueprint/pkg/grpc"
 	"golang.org/x/exp/slog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,8 +43,8 @@ func handleError(
 		"func", myErr.NameFunc(),
 		"payload", myErr.Payload(),
 		"chain", myErr.Chain(),
-		"path", "",
-		"controller", "",
+		"path", grpcware.PathContext(ctx),
+		"controller", grpcware.ControllerContext(ctx),
 		"params", "",
 		"query", "",
 	)
