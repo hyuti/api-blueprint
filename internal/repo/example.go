@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"errors"
+	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
 	"time"
 )
 
@@ -38,5 +39,8 @@ type ExampleRepoImpl struct {
 var _ ExampleRepo = (*ExampleRepoImpl)(nil)
 
 func (e *ExampleRepoImpl) List(ctx context.Context, w *Where[*ExampleWhereReq]) ([]*Example, error) {
-	return nil, errors.New("not implemented")
+	return nil, pkgerr.DefaultErrInternalServer(
+		errors.New("not implemented"),
+		"e.ErrFunc",
+	)
 }

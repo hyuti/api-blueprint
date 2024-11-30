@@ -2,6 +2,7 @@ package error
 
 import (
 	"errors"
+	"runtime"
 	"strings"
 )
 
@@ -27,6 +28,28 @@ var WithPayloadOpt = func(payload any) ErrInternalServerOpt {
 var WithChainOpt = func(chain ...string) ErrInternalServerOpt {
 	return func(impl *Error) {
 		impl.chain = chain
+	}
+}
+var MostRecentChainOpt = func(errFunc string) ErrInternalServerOpt {
+	return func(err *Error) {
+		nameFunc := "TwoMostRecentChainOpt"
+		if pc, _, _, ok := runtime.Caller(2); !ok {
+			nameFunc = runtime.FuncForPC(pc).Name()
+		}
+		err.chain = []string{errFunc, nameFunc}
+	}
+}
+var CurrentNameFuncOpt = func(skips ...int) ErrInternalServerOpt {
+	return func(err *Error) {
+		skip := 0
+		if len(skips) > 0 {
+			skip = skips[0]
+		}
+		nameFunc := "CurrentNameFuncOpt"
+		if pc, _, _, ok := runtime.Caller(skip + 2); !ok {
+			nameFunc = runtime.FuncForPC(pc).Name()
+		}
+		err.nameFunc = nameFunc
 	}
 }
 
@@ -101,4 +124,12 @@ func ErrInternalServer(err error, opts ...ErrInternalServerOpt) *Error {
 		opt(errImpl)
 	}
 	return errImpl
+}
+
+func DefaultErrInternalServer(err error, errFunc string) *Error {
+	return ErrInternalServer(
+		err,
+		MostRecentChainOpt(errFunc),
+		CurrentNameFuncOpt(1),
+	)
 }
