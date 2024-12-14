@@ -3,20 +3,9 @@ APP:
   DEBUG: true
   PATH_LOGGER: ./log/services.log
 
-ELASTIC:
-  URL:
-  USERNAME:
-  PASSWORD:
-  TIMEOUT_SECOND: 5
-
 GIN:
   PORT: 8000
-  BASE_PATH: /example
-
-TELEGRAM:
-  TOKEN:
-  CHAT_ID:
-  FAIL_SILENTLY: false
+  BASE_PATH: /api/v1
 
 GRPC:
   PORT: 8001

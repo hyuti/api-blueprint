@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/hyuti/api-blueprint/internal/proto"
 
 	"github.com/hyuti/api-blueprint/internal/repo"
@@ -31,7 +30,12 @@ type (
 var _ ExampleUseCase = (*ExampleUseCaseImpl)(nil)
 
 func (e *ExampleUseCaseImpl) List(ctx context.Context, req *ExampleReq) (*ExampleResp, error) {
-	return nil, errors.New("not implemented")
+	if _, err := e.repo.List(ctx, &repo.Where[*repo.ExampleWhereReq]{
+		W: nil,
+	}); err != nil {
+		return nil, err
+	}
+	return &ExampleResp{}, nil
 }
 
 type ExampleUseCaseImpl struct {

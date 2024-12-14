@@ -4,9 +4,15 @@ import (
 	"errors"
 	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
 	"golang.org/x/exp/slog"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	internalErrorMsg    = "Something went wrong, please check server logs for detail"
+	emptyBodyRequestMsg = "Body request must not be empty"
 )
 
 // @Description Response of API if error occurs
@@ -32,7 +38,11 @@ func handleError(
 	var myErr *pkgerr.Error
 	if !errors.As(err, &myErr) {
 		myErr = pkgerr.ErrInternalServer(err)
+		if errors.Is(err, io.EOF) {
+			myErr = pkgerr.ErrValidatingRequest(errors.New(emptyBodyRequestMsg))
+		}
 	}
+
 	switch {
 	case errors.Is(myErr, pkgerr.LabelErrValidatingRequest):
 		code = http.StatusBadRequest
@@ -67,7 +77,7 @@ func handleError(
 
 	ctx.AbortWithStatusJSON(http.StatusInternalServerError, ErrResponse{
 		Code: http.StatusInternalServerError,
-		Msg:  "Something went wrong, please check server logs for detail",
+		Msg:  internalErrorMsg,
 	})
 	return
 }

@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hyuti/api-blueprint/internal/usecase"
 	pkgerr "github.com/hyuti/api-blueprint/pkg/error"
@@ -14,13 +15,19 @@ import (
 
 const plKey = "payloadKey"
 
-func New(router gin.IRouter,
+func New(
+	router gin.IRouter,
+	lgr *slog.Logger,
 	u1 usecase.ExampleUseCase,
 ) {
 	_router := new(route)
+	_router.lgr = lgr
 	_router.uc1 = u1
 
-	router.POST("/list", _router.list)
+	exampleRouter := router.Group("/example")
+	{
+		exampleRouter.POST("/list", _router.list)
+	}
 }
 
 type route struct {
@@ -36,12 +43,17 @@ func OnPanic(lgr *slog.Logger) gin.RecoveryFunc {
 			data = []byte(tool.JSONStringify(d))
 		}
 		var chain []string
-		for i := 5; ; i++ {
-			pc, _, _, ok := runtime.Caller(i)
+		for i := 9; i < 11; i++ {
+			pc, file, line, ok := runtime.Caller(i)
 			if !ok {
 				break
 			}
-			chain = append(chain, runtime.FuncForPC(pc).Name())
+			chain = append(chain, fmt.Sprintf(
+				"%s (%s:%d)",
+				runtime.FuncForPC(pc).Name(),
+				file,
+				line,
+			))
 		}
 		err, ok := errObj.(error)
 		if !ok {

@@ -13,13 +13,18 @@ func initializeApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger, err := WithLogger()
+	logger, err := WithLogger(config)
+	if err != nil {
+		return nil, err
+	}
+	engine, err := WithGinEngine(config, logger)
 	if err != nil {
 		return nil, err
 	}
 	appApp := &App{
-		cfg:    config,
-		logger: logger,
+		cfg:       config,
+		logger:    logger,
+		ginEngine: engine,
 	}
 	return appApp, nil
 }

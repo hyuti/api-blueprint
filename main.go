@@ -41,7 +41,7 @@ func init() {
 
 	// TODO: add more jobs here
 	initRestfulServer()
-	initGrpcServer()
+	//initGrpcServer()
 }
 
 // @title Example API
@@ -80,7 +80,7 @@ func initRestfulServer() {
 		{
 			group.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 			group.GET("/healthcheck", router.HeathCheck)
-			router.New(group, _uc)
+			router.New(group, app.Logger(), _uc)
 		}
 	}, func() error {
 		return app.Gin().Run(fmt.Sprintf("0.0.0.0:%v", app.Cfg().Gin.Port))

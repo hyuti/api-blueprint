@@ -29,7 +29,7 @@ type ListExampleReq struct {
 	PageSize *int32 `json:"page_size"`
 	// default is 0
 	Page   *int32  `json:"page"`
-	Search *string `json:"search" binding:"required"`
+	Search *string `json:"search"`
 }
 type ListExampleResp struct {
 	*PaginatedResponse[*Example]

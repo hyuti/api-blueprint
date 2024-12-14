@@ -85,7 +85,11 @@ func New(cfg *Cfg) *gin.Engine {
 		if v == nil {
 			return
 		}
-		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), ctx2.CtxIDKey, v))
+		c.Request = c.Request.WithContext(context.WithValue(
+			c.Request.Context(),
+			ctx2.CtxIDKey,
+			v,
+		))
 	})
 	return server
 }
