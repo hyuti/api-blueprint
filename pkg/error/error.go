@@ -20,29 +20,19 @@ var WithNameFuncOpt = func(nameFunc string) ErrInternalServerOpt {
 		err.nameFunc = nameFunc
 	}
 }
+
 var WithPayloadOpt = func(payload any) ErrInternalServerOpt {
 	return func(impl *Error) {
 		impl.payload = payload
 	}
 }
+
 var WithChainOpt = func(chain ...string) ErrInternalServerOpt {
 	return func(impl *Error) {
 		impl.chain = chain
 	}
 }
-var MostRecentChainOpt = func(errFunc string, skips ...int) ErrInternalServerOpt {
-	return func(err *Error) {
-		nameFunc := "TwoMostRecentChainOpt"
-		skip := 0
-		if len(skips) > 0 {
-			skip = skips[0]
-		}
-		if pc, _, _, ok := runtime.Caller(2 + skip); ok {
-			nameFunc = runtime.FuncForPC(pc).Name()
-		}
-		err.chain = []string{errFunc, nameFunc}
-	}
-}
+
 var ErrFuncTriggerOpt = func(nameFunc string) ErrInternalServerOpt {
 	return func(err *Error) {
 		err.nameFunc = nameFunc
@@ -123,9 +113,13 @@ func ErrInternalServer(err error, opts ...ErrInternalServerOpt) *Error {
 }
 
 func DefaultErrInternalServer(err error, errFunc string) *Error {
+	nameFunc := "DefaultErrInternalServer"
+	if pc, _, _, ok := runtime.Caller(1); ok {
+		nameFunc = runtime.FuncForPC(pc).Name()
+	}
 	return ErrInternalServer(
 		err,
-		MostRecentChainOpt(errFunc, 1),
+		WithChainOpt(errFunc, nameFunc),
 		ErrFuncTriggerOpt(errFunc),
 	)
 }
